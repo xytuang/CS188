@@ -17,6 +17,7 @@ In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
 
+import searchAgents
 import util
 
 class SearchProblem:
@@ -72,6 +73,16 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+class Node:
+    def __init__(self, state, pred, action, priority=0):
+        self.state = state
+        self.pred = pred
+        self.action = action
+        self.priority = priority
+    
+    def __repr__(self):
+        return f'State: {self.state}; Action: {self.action}'
+
 def depthFirstSearch(problem: SearchProblem):
     """
     Search the deepest nodes in the search tree first.
@@ -87,17 +98,65 @@ def depthFirstSearch(problem: SearchProblem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.Stack()
+    visited = set()
+    fringe.push(Node(problem.getStartState(), None, None))
+    while (fringe.isEmpty() is not True):
+        curr = fringe.pop()
+        if (problem.isGoalState(curr.state) is True):
+            actions = []
+            while curr.action is not None:
+                actions.append(curr.action)
+                curr = curr.pred
+            actions.reverse()
+            return actions
+        elif (curr.state not in visited):
+            visited.add(curr.state)
+            for neighbor in problem.getSuccessors(curr.state):
+                fringe.push(Node(neighbor[0], curr, neighbor[1]))
+    return list()
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    visited = set()
+    fringe = util.Queue()
+    fringe.push(Node(problem.getStartState(), None, None))
+    while (fringe.isEmpty() is not True):
+        curr = fringe.pop()
+        if (problem.isGoalState(curr.state)):
+            actions = []
+            while curr.action is not None:
+                actions.append(curr.action)
+                curr = curr.pred
+            actions.reverse()
+            return actions
+        elif (curr.state not in visited):
+            visited.add(curr.state)
+            for neighbor in problem.getSuccessors(curr.state):
+                fringe.push(Node(neighbor[0], curr, neighbor[1]))
+    return list()
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    visited = set()
+    fringe = util.PriorityQueue()
+    fringe.push(Node(problem.getStartState(), None, None), 0)
+    while (fringe.isEmpty() is not True):
+        curr = fringe.pop()
+        if (problem.isGoalState(curr.state)):
+            actions = []
+            while curr.action is not None:
+                actions.append(curr.action)
+                curr = curr.pred
+            actions.reverse()
+            return actions
+        elif (curr.state not in visited):
+            visited.add(curr.state)
+            for neighbor in problem.getSuccessors(curr.state):
+                fringe.push(Node(neighbor[0], curr, neighbor[1], curr.priority + neighbor[2]), curr.priority + neighbor[2])
+    return list()
 
 def nullHeuristic(state, problem=None):
     """
@@ -109,8 +168,24 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-
+    visited = set()
+    fringe = util.PriorityQueue()
+    fringe.push(Node(problem.getStartState(), None, None), searchAgents.manhattanHeuristic(problem.getStartState(), problem))
+    while (fringe.isEmpty() is not True):
+        curr = fringe.pop()
+        if (problem.isGoalState(curr.state)):
+            actions = []
+            while curr.action is not None:
+                actions.append(curr.action)
+                curr = curr.pred
+            actions.reverse()
+            return actions
+        elif (curr.state not in visited):
+            visited.add(curr.state)
+            for neighbor in problem.getSuccessors(curr.state):
+                h = searchAgents.manhattanHeuristic(neighbor[0], problem)
+                fringe.push(Node(neighbor[0], curr, neighbor[1], h + neighbor[2]), h + neighbor[2])
+    return list()
 
 # Abbreviations
 bfs = breadthFirstSearch
